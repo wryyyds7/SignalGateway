@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  ubuntu:
+    name: Ubuntu 22.04
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: sudo apt-get update && sudo apt-get install -y build-essential cmake
+    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+    - run: cmake --build build -j$(nproc)
+    - run: cd build && ctest --verbose --output-on-failure
+    - name: AddressSanitizer
+      run: |
+        cmake -B build-asan -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address"
+        cmake --build build-asan -j$(nproc)
+        cd build-asan && ctest --verbose --output-on-failure
+
+  openeuler:
+    name: openEuler 22.03 LTS
+    runs-on: ubuntu-22.04
+    container:
+      image: openeuler/openeuler:22.03-lts
+    steps:
+    - uses: actions/checkout@v4
+    - run: dnf install -y gcc gcc-c++ cmake make
+    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+    - run: cmake --build build -j$(nproc)
+    - run: cd build && ctest --verbose --output-on-failure
