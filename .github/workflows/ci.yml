@@ -27,7 +27,7 @@ jobs:
       image: openeuler/openeuler:22.03-lts
     steps:
     - uses: actions/checkout@v4
-    - run: dnf install -y gcc gcc-c++ cmake make
+    - run: dnf install -y gcc gcc-c++ cmake make git
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
     - run: cmake --build build -j$(nproc)
     - run: cd build && ctest --verbose --output-on-failure
